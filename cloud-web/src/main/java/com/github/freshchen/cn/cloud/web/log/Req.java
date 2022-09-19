@@ -29,17 +29,17 @@ public class Req {
     public String toString() {
         String bodyStr = StringUtils.EMPTY;
         if (StringUtils.isNotBlank(body)) {
-            bodyStr = ", body='" + body + '\'';
+            bodyStr = ", body=" + body;
         }
         String headerStr = StringUtils.EMPTY;
         if (!CollectionUtils.isEmpty(headers)) {
             headerStr = ", headers=" + headers;
         }
         return "Req{" +
-                "method='" + method + '\'' +
-                ", url='" + url + '\'' +
+                "method=" + method +
+                ", url=" + url +
                 bodyStr +
                 headerStr +
-                '}';
+                "}";
     }
 }

@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author freshchen
@@ -32,15 +33,19 @@ public class CustomRequestWrapper extends HttpServletRequestWrapper {
 
     private final Map<String, String> headerMap = new HashMap<>();
 
+    private static final byte[] EMPTY_BODY = "{}".getBytes(StandardCharsets.UTF_8);
     private final byte[] body;
 
     private Map<String, String[]> parameterMap;
 
     public CustomRequestWrapper(HttpServletRequest request) throws IOException {
         super(request);
-        body = ByteStreams.toByteArray(request.getInputStream());
-
-
+        ServletInputStream inputStream = request.getInputStream();
+        if (Objects.isNull(inputStream)) {
+            body = EMPTY_BODY;
+        } else {
+            body = ByteStreams.toByteArray(inputStream);
+        }
     }
 
     @Override

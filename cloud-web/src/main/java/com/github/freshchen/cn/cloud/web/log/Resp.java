@@ -33,9 +33,9 @@ public class Resp {
         }
         return "Resp{" +
                 "httpCode=" + httpStatus +
-                ", body='" + body + '\'' +
+                ", body=" + body +
                 headerStr +
-                ", cost='" + cost + '\'' +
-                '}';
+                ", cost=" + cost +
+                "}";
     }
 }
