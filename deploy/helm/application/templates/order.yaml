@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: order
+  labels:
+    app: order
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: order
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order
+  labels:
+    app: order
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: order
+        version: latest
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+        - name: order
+          imagePullPolicy: Never
+          image: freshchen/order:latest
+          resources:
+            limits:
+              memory: "512Mi"
+          env:
+            - name: TZ
+              value: "Asia/Shanghai"
+            - name: APP_ID
+              value: "order-pro"
+            - name: APOLLO_META
+              value: "http://apollo:8070"
+            - name: APOLLO_CONFIGSERVICE
+              value: "http://apollo:8080"
+            - name: ENV
+              value: "DEV"
+            - name: SW_AGENT_NAME
+              value: "order"
+            - name: SW_AGENT_COLLECTOR_BACKEND_SERVICES
+              value: "skywalking-oap:11800"
+            - name: JAVA_OPTS
+              value: "-Djava.security.egd=file:/dev/./urandom
+              -Denv=DEV
+              -Dapollo.bootstrap.namespaces=spring,database-pro,rabbitmq-pro,contract-pro
+              -Dio.netty.tryReflectionSetAccessible=true
+              --illegal-access=deny
+              --add-opens java.base/java.lang=ALL-UNNAMED
+              --add-opens java.base/jdk.internal.misc=ALL-UNNAMED
+              -Dfile.encoding=UTF-8
+              -XX:+UseG1GC
+              -Djava.awt.headless=true
+              -Xss512k
+              -noverify
+              -XX:TieredStopAtLevel=1
+              "
+          ports:
+            - containerPort: 8080
