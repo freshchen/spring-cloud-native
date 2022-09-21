@@ -33,6 +33,19 @@ spec:
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
+      initContainers:
+        - name: skywalking-agent
+          image: sw-java-agent:8.12.0
+          env:
+            - name: SW_AGENT_NAME
+              value: "order"
+            - name: SW_AGENT_COLLECTOR_BACKEND_SERVICES
+              value: "skywalking-oap:11800"
+          command: [ "/bin/sh","-c" ]
+          args: [ "cp -rf /home/skywalking-agent /tmp; cp /tmp/skywalking-agent/optional-plugins/apm-trace-ignore-plugin-8.12.0.jar /tmp/skywalking-agent/plugins/" ]
+          volumeMounts:
+            - mountPath: /tmp
+              name: sky-agent-volume
       containers:
         - name: order
           imagePullPolicy: Never
@@ -60,6 +73,9 @@ spec:
               -Denv=DEV
               -Dapollo.bootstrap.namespaces=spring,database-pro,rabbitmq-pro,contract-pro
               -Dio.netty.tryReflectionSetAccessible=true
+              -javaagent:/tmp/skywalking-agent/skywalking-agent.jar
+              -Dskywalking.agent.instance_name=order
+              -Dskywalking.agent.service_name=order
               --illegal-access=deny
               --add-opens java.base/java.lang=ALL-UNNAMED
               --add-opens java.base/jdk.internal.misc=ALL-UNNAMED
@@ -72,3 +88,10 @@ spec:
               "
           ports:
             - containerPort: 8080
+
+          volumeMounts:
+            - mountPath: /tmp
+              name: sky-agent-volume
+      volumes:
+        - name: sky-agent-volume
+          emptyDir: { }

@@ -37,13 +37,13 @@ spec:
     spec:
       containers:
         - name: skywalking-ui
-          image: "apache/skywalking-ui:8.8.0"
+          image: "apache/skywalking-ui:9.0.0"
           imagePullPolicy: Never
           ports:
             - containerPort: 8080
               name: page
           env:
             - name: SW_OAP_ADDRESS
-              value: "skywalking-oap:12800"
+              value: "http://skywalking-oap:12800"
 
 {{- end }}
