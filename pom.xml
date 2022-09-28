@@ -6,12 +6,13 @@
         <module>cloud-web</module>
         <module>cloud-events</module>
         <module>cloud-common</module>
+        <module>cloud-trace</module>
     </modules>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.3</version>
+        <version>2.7.4</version>
         <relativePath/>
     </parent>
 
@@ -36,6 +37,7 @@
         <cloud-common.version>1.0.0-SNAPSHOT</cloud-common.version>
         <cloud-events.version>1.0.0-SNAPSHOT</cloud-events.version>
         <cloud-web.version>1.0.0-SNAPSHOT</cloud-web.version>
+        <cloud-trace.version>1.0.0-SNAPSHOT</cloud-trace.version>
 
         <!--  *****************************************  3rd  ***************************************** -->
         <apollo-client.version>1.9.0</apollo-client.version>
@@ -58,12 +60,23 @@
         <spring-cloud-vault.version>3.0.4</spring-cloud-vault.version>
         <spring-cloud.version>2021.0.3</spring-cloud.version>
         <swagger-annotations.version>1.5.20</swagger-annotations.version>
+        <skywalking.sdk.version>8.12.0</skywalking.sdk.version>
         <transmittable-thread-local.version>2.12.2</transmittable-thread-local.version>
         <xxl-job.version>2.3.0</xxl-job.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.apache.skywalking</groupId>
+                <artifactId>apm-toolkit-logback-1.x</artifactId>
+                <version>${skywalking.sdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.skywalking</groupId>
+                <artifactId>apm-toolkit-trace</artifactId>
+                <version>${skywalking.sdk.version}</version>
+            </dependency>
             <dependency>
                 <groupId>io.cloudevents</groupId>
                 <artifactId>cloudevents-api</artifactId>
@@ -83,6 +96,11 @@
                 <groupId>com.github.freshchen.cn</groupId>
                 <artifactId>cloud-web</artifactId>
                 <version>${cloud-web.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.freshchen.cn</groupId>
+                <artifactId>cloud-trace</artifactId>
+                <version>${cloud-trace.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.github.freshchen.cn</groupId>

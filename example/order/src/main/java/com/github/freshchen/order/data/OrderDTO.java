@@ -2,6 +2,8 @@ package com.github.freshchen.order.data;
 
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
+
 /**
  * @author freshchen
  * @since 2022/9/18
@@ -9,5 +11,6 @@ import lombok.Data;
 @Data
 public class OrderDTO {
 
+    @NotBlank
     private String orderNo;
 }

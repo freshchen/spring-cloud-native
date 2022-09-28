@@ -7,7 +7,7 @@
     <springProperty name="log.level" source="log.level" defaultValue="INFO"/>
 
     <property name="LOG_PATTERN"
-              value="%d [app=${app} tid=%X{traceId} sid=%X{spanId}] [%thread][%level] %logger{36}.%M - %msg%n"/>
+              value="%d [app=${app} tid=%X{tid}] [%thread][%level] %logger{36}.%M - %msg%n"/>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>/home/work/logs/server.log</file>
@@ -16,8 +16,10 @@
             <maxHistory>7</maxHistory>
             <maxFileSize>100MB</maxFileSize>
         </rollingPolicy>
-        <encoder>
-            <pattern>${LOG_PATTERN}</pattern>
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.mdc.TraceIdMDCPatternLogbackLayout">
+                <pattern>${LOG_PATTERN}</pattern>
+            </layout>
         </encoder>
     </appender>
 
@@ -26,8 +28,10 @@
     </appender>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>${LOG_PATTERN}</pattern>
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.mdc.TraceIdMDCPatternLogbackLayout">
+                <pattern>${LOG_PATTERN}</pattern>
+            </layout>
         </encoder>
     </appender>
 
@@ -35,9 +39,19 @@
         <appender-ref ref="STDOUT"/>
     </appender>
 
+    <appender name="SW_GRPC" class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.log.GRPCLogClientAppender">
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="org.apache.skywalking.apm.toolkit.log.logback.v1.x.mdc.TraceIdMDCPatternLogbackLayout">
+                <pattern>${LOG_PATTERN}</pattern>
+            </layout>
+        </encoder>
+    </appender>
+
+
     <root level="${log.level}">
         <appender-ref ref="ASYNC_FILE"/>
         <appender-ref ref="ASYNC_STDOUT"/>
+        <appender-ref ref="SW_GRPC"/>
     </root>
 
 </configuration>
