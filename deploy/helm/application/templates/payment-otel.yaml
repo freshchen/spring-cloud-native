@@ -1,55 +1,50 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: order
+  name: payment
   labels:
-    app: order
+    app: payment
 spec:
   ports:
     - port: 80
       targetPort: 8080
   selector:
-    app: order
+    app: payment
 
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: order
+  name: payment
   labels:
-    app: order
+    app: payment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: order
+      app: payment
   strategy:
     type: RollingUpdate
   template:
     metadata:
       labels:
-        app: order
+        app: payment
         version: latest
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
       initContainers:
-        - name: skywalking-agent
-          image: sw-java-agent:8.12.0
-          env:
-            - name: SW_AGENT_NAME
-              value: "order"
-            - name: SW_AGENT_COLLECTOR_BACKEND_SERVICES
-              value: "skywalking-oap:11800"
+        - name: otel-agent
+          image: freshchen/opentelemetry-javaagent:1.18.0
           command: [ "/bin/sh","-c" ]
-          args: [ "cp -rf /home/skywalking-agent /tmp; cp /tmp/skywalking-agent/optional-plugins/apm-trace-ignore-plugin-8.12.0.jar /tmp/skywalking-agent/plugins/" ]
+          args: [ "cp /otel/opentelemetry-javaagent-1.18.0.jar /tmp/otel-agent.jar" ]
           volumeMounts:
             - mountPath: /tmp
-              name: sky-agent-volume
+              name: otel-agent-volume
       containers:
-        - name: order
+        - name: payment
           imagePullPolicy: Never
-          image: freshchen/order:latest
+          image: freshchen/payment:latest
           resources:
             limits:
               memory: "512Mi"
@@ -57,25 +52,27 @@ spec:
             - name: TZ
               value: "Asia/Shanghai"
             - name: APP_ID
-              value: "order-pro"
+              value: "payment-pro"
             - name: APOLLO_META
               value: "http://apollo:8070"
             - name: APOLLO_CONFIGSERVICE
               value: "http://apollo:8080"
             - name: ENV
               value: "DEV"
-            - name: SW_AGENT_NAME
-              value: "order"
-            - name: SW_AGENT_COLLECTOR_BACKEND_SERVICES
-              value: "skywalking-oap:11800"
+            - name: OTEL_SERVICE_NAME
+              value: "payment"
+            - name: OTEL_TRACES_EXPORTER
+              value: "jaeger"
+            - name: OTEL_METRICS_EXPORTER
+              value: "none"
+            - name: OTEL_EXPORTER_JAEGER_ENDPOINT
+              value: "http://jaeger-service:14250"
             - name: JAVA_OPTS
               value: "-Djava.security.egd=file:/dev/./urandom
               -Denv=DEV
               -Dapollo.bootstrap.namespaces=spring,database-pro,rabbitmq-pro,contract-pro
               -Dio.netty.tryReflectionSetAccessible=true
-              -javaagent:/tmp/skywalking-agent/skywalking-agent.jar
-              -Dskywalking.agent.instance_name=order
-              -Dskywalking.agent.service_name=order
+              -javaagent:/tmp/otel-agent.jar
               --illegal-access=deny
               --add-opens java.base/java.lang=ALL-UNNAMED
               --add-opens java.base/jdk.internal.misc=ALL-UNNAMED
@@ -91,7 +88,7 @@ spec:
 
           volumeMounts:
             - mountPath: /tmp
-              name: sky-agent-volume
+              name: otel-agent-volume
       volumes:
-        - name: sky-agent-volume
+        - name: otel-agent-volume
           emptyDir: { }

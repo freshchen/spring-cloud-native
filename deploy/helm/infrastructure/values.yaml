@@ -11,12 +11,18 @@ apollo:
   mysqlHost: "192.168.1.29"
 
 skywalking:
-  skywalkingEnabled: true
+  skywalkingEnabled: false
 
 efk:
-  elasticsearchEnabled: true
+  elasticsearchEnabled: false
   fluentdEnabled: false
-  kibanaEnabled: true
+  kibanaEnabled: false
+
+opentelemetry:
+  otelEnabled: true
+
+jaeger:
+  jaegerEnabled: true
 
 mysql:
   mysqlEnabled: false

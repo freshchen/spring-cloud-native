@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: order
+  labels:
+    app: order
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: order
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order
+  labels:
+    app: order
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: order
+        version: latest
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      initContainers:
+        - name: otel-agent
+          image: freshchen/opentelemetry-javaagent:1.18.0
+          command: [ "/bin/sh","-c" ]
+          args: [ "cp /otel/opentelemetry-javaagent-1.18.0.jar /tmp/otel-agent.jar" ]
+          volumeMounts:
+            - mountPath: /tmp
+              name: otel-agent-volume
+      containers:
+        - name: order
+          imagePullPolicy: Never
+          image: freshchen/order:latest
+          resources:
+            limits:
+              memory: "512Mi"
+          env:
+            - name: TZ
+              value: "Asia/Shanghai"
+            - name: APP_ID
+              value: "order-pro"
+            - name: APOLLO_META
+              value: "http://apollo:8070"
+            - name: APOLLO_CONFIGSERVICE
+              value: "http://apollo:8080"
+            - name: ENV
+              value: "DEV"
+            - name: OTEL_SERVICE_NAME
+              value: "order"
+            - name: OTEL_TRACES_EXPORTER
+              value: "jaeger"
+            - name: OTEL_METRICS_EXPORTER
+              value: "none"
+            - name: OTEL_EXPORTER_JAEGER_ENDPOINT
+              value: "http://jaeger-service:14250"
+            - name: JAVA_OPTS
+              value: "-Djava.security.egd=file:/dev/./urandom
+              -Denv=DEV
+              -Dapollo.bootstrap.namespaces=spring,database-pro,rabbitmq-pro,contract-pro
+              -Dio.netty.tryReflectionSetAccessible=true
+              -javaagent:/tmp/otel-agent.jar
+              --illegal-access=deny
+              --add-opens java.base/java.lang=ALL-UNNAMED
+              --add-opens java.base/jdk.internal.misc=ALL-UNNAMED
+              -Dfile.encoding=UTF-8
+              -XX:+UseG1GC
+              -Djava.awt.headless=true
+              -Xss512k
+              -noverify
+              -XX:TieredStopAtLevel=1
+              "
+          ports:
+            - containerPort: 8080
+
+          volumeMounts:
+            - mountPath: /tmp
+              name: otel-agent-volume
+      volumes:
+        - name: otel-agent-volume
+          emptyDir: { }

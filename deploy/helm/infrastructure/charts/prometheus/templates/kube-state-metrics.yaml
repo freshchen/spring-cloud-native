@@ -1,3 +1,5 @@
+{{- if .Values.prometheusEnabled -}}
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -200,3 +202,5 @@ spec:
       targetPort: telemetry
   selector:
     app.kubernetes.io/name: kube-state-metrics
+
+{{- end }}
